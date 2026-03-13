@@ -941,6 +941,18 @@ if __name__ == '__main__':
 		print('    stop_lsn  : ',stop_lsn)
 		print('    max_lsn   : ',max_lsn)
 	current_lsn = start_lsn
+	first_lsn = 0
+	with open(nfilename_list[0][1]['filename'],'rb') as f:
+		_ = f.seek(2048,0)
+		while True:
+			data = f.read(512)
+			if len(data) != 512:
+				break
+			bhno,bhdl,bhfr,bhep = struct.unpack('>LHHL',data[:12])
+			if bhfr > 0:
+				first_lsn = f.tell()-512+bhfr+nfilename_list[0][1]['LOG_HEADER_START_LSN']-2048
+				break
+	current_lsn = max(current_lsn,first_lsn)
 	IS_MF = True
 	MF_FLAGS = ''
 	for fmin_lsn,x in nfilename_list:
